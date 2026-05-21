@@ -16,6 +16,9 @@
                         <resource id="ETechFlow_PageSpeedOptimizer::diagnose"
                                   title="ETechFlow Page Speed Diagnose"
                                   sortOrder="50"/>
+                        <resource id="ETechFlow_PageSpeedOptimizer::trends"
+                                  title="ETechFlow Page Speed Trends"
+                                  sortOrder="51"/>
                     </resource>
                 </resource>
             </resource>

@@ -4,6 +4,43 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
+## [1.1.0] — 2026-05-21 — Score Timeline graph + History CLI
+
+Pure additive release on top of v1.0.0. The diagnostic runs we've been logging into `etechflow_pso_diagnostic_log` now surface as a visual trend graph + a tabular history CLI.
+
+### Added
+
+- **Admin page at *Stores → Settings → Page Speed Trends*** — visual score-over-time chart with the last 20 diagnostic runs in a table below.
+  - Inline SVG line chart, server-rendered. No JS lib dependency (no Chart.js, no React, no jQuery). Loads instantly.
+  - One coloured line per (URL, strategy) combination. Hover any data point to see the exact score + timestamp.
+  - Y-axis grid lines highlight Google's score bands (90 = green / 50 = orange thresholds).
+  - Recent-runs table with colour-coded scores, LCP / TBT / CLS columns.
+- **`bin/magento etechflow:pso:history --url=... --limit=20 --json`** CLI — tabular dump of recent runs. Useful for:
+  - CI pipelines tracking score regression over time
+  - Agency dashboards aggregating across multiple stores
+  - Quick "what's the current state?" check without opening admin
+- New ACL resource `ETechFlow_PageSpeedOptimizer::trends` separately grantable from `::diagnose` — view-only roles can see history without being able to spawn new diagnostic runs.
+
+### Backwards compatibility
+
+No schema changes, no `setup:upgrade` required when upgrading from v1.0.0 → v1.1.0. Only `composer update` + `cache:flush`.
+
+### Migration
+
+```
+composer update etechflow/module-page-speed-optimizer
+bin/magento setup:di:compile
+bin/magento cache:flush
+```
+
+### Magento gotcha caught by live testing
+
+Adding to our running list of "Magento APIs that bite you on first run":
+
+- **`Magento\Framework\DataObject::hasData($key = '')` has a `$key` parameter**, so a child block class can't define `public function hasData(): bool` (no args) — PHP rejects the incompatible signature at compile time. Named our method `hasAnyRuns()` instead. (Adds to the IO v1.2.0 lessons about `$formKey` readonly conflict, `varchar(1024)` cap, and InnoDB 3072-byte index limit.)
+
+---
+
 ## [1.0.0] — 2026-05-21 — Google PageSpeed Insights diagnostic + foundation
 
 First commercial release. Ships the **PSI Diagnose** feature — the visible-feature that closes every "is your store fast?" conversation with merchants. Code optimization (CSS/JS/HTML minification, defer fonts, prioritize resource loading) follows in v1.1+.

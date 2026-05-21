@@ -9,5 +9,12 @@
              parent="Magento_Backend::system_other_settings"
              action="etechflow_pso/diagnose/index"
              resource="ETechFlow_PageSpeedOptimizer::diagnose"/>
+        <add id="ETechFlow_PageSpeedOptimizer::trends"
+             title="Page Speed Trends"
+             module="ETechFlow_PageSpeedOptimizer"
+             sortOrder="51"
+             parent="Magento_Backend::system_other_settings"
+             action="etechflow_pso/trends/index"
+             resource="ETechFlow_PageSpeedOptimizer::trends"/>
     </menu>
 </config>

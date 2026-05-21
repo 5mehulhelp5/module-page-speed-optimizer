@@ -1,0 +1,196 @@
+<?php
+/**
+ * @var \ETechFlow\PageSpeedOptimizer\Block\Adminhtml\Trends\Page $block
+ * @var \Magento\Framework\Escaper $escaper
+ *
+ * Renders the SVG line chart server-side from PHP so the page works
+ * without any JS dependency (Chart.js, etc.). The chart is small (~700
+ * lines of SVG) and renders instantly on page load.
+ */
+
+$data = $block->getChartData();
+$runs = $block->getRecentRuns(20);
+$hasData = $block->hasAnyRuns();
+
+// Chart geometry
+$chartWidth  = 920;
+$chartHeight = 320;
+$padLeft     = 56;
+$padRight    = 200;
+$padTop      = 18;
+$padBottom   = 38;
+$plotWidth   = $chartWidth - $padLeft - $padRight;
+$plotHeight  = $chartHeight - $padTop - $padBottom;
+
+// Colour palette — distinct hues for each series
+$palette = ['#1f4fa0', '#a06800', '#1f7a1f', '#a02818', '#5f1fa0', '#1fa0a0', '#a01f7a', '#7a7a1f'];
+
+// Helper: convert ISO datetime → unix timestamp.
+$toTs = function ($iso) {
+    if (!is_string($iso) || $iso === '') {
+        return 0;
+    }
+    $t = strtotime($iso);
+    return $t === false ? 0 : $t;
+};
+
+$minTs = $data['min_date'] ? $toTs($data['min_date']) : 0;
+$maxTs = $data['max_date'] ? $toTs($data['max_date']) : 0;
+if ($minTs === $maxTs) {
+    $maxTs = $minTs + 1; // avoid div-by-zero on a single-point series
+}
+?>
+
+<div style="max-width:1180px;">
+    <div style="background:#fff; border:1px solid #d6d6d6; border-radius:4px; padding:22px;">
+
+        <?php if (!$hasData): ?>
+            <div style="padding:32px; text-align:center; color:#777;">
+                <strong style="color:#444; font-size:1.1em;"><?= $escaper->escapeHtml(__('No diagnostic runs yet')); ?></strong>
+                <p style="margin-top:8px;">
+                    <?= $escaper->escapeHtml(__('Run your first diagnostic from')); ?>
+                    <a href="<?= $escaper->escapeUrl($block->getUrl('etechflow_pso/diagnose/index')); ?>">
+                        <?= $escaper->escapeHtml(__('Page Speed Diagnose')); ?>
+                    </a>
+                    <?= $escaper->escapeHtml(__('to start building a score history.')); ?>
+                </p>
+            </div>
+        <?php else: ?>
+
+            <div style="display:flex; gap:20px; align-items:center; margin-bottom:16px;">
+                <h2 style="margin:0; font-size:1.2em;"><?= $escaper->escapeHtml(__('Performance score over time')); ?></h2>
+                <div style="color:#777; font-size:0.9em;">
+                    <?= count($runs); ?> <?= $escaper->escapeHtml(__('most recent runs shown below;')); ?>
+                    <?= count($data['series']); ?> <?= $escaper->escapeHtml(__('URL + strategy combinations charted.')); ?>
+                </div>
+            </div>
+
+            <!-- SVG line chart -->
+            <svg width="<?= $chartWidth; ?>" height="<?= $chartHeight; ?>"
+                 viewBox="0 0 <?= $chartWidth; ?> <?= $chartHeight; ?>"
+                 style="display:block; max-width:100%; height:auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+
+                <!-- Y-axis grid lines (0, 50, 90, 100) -->
+                <?php foreach ([0, 50, 90, 100] as $score):
+                    $y = $padTop + $plotHeight - ($score / 100) * $plotHeight;
+                    $colour = $score === 100 ? '#1f7a1f' : ($score === 90 ? '#1f7a1f' : ($score === 50 ? '#a06800' : '#ddd'));
+                    $dash = $score === 90 || $score === 50 ? '3,3' : '1,3';
+                ?>
+                    <line x1="<?= $padLeft; ?>" y1="<?= $y; ?>"
+                          x2="<?= $padLeft + $plotWidth; ?>" y2="<?= $y; ?>"
+                          stroke="<?= $colour; ?>" stroke-width="1"
+                          stroke-dasharray="<?= $dash; ?>" opacity="0.4"/>
+                    <text x="<?= $padLeft - 8; ?>" y="<?= $y + 4; ?>"
+                          fill="#666" font-size="11" text-anchor="end">
+                        <?= $score; ?>
+                    </text>
+                <?php endforeach; ?>
+
+                <!-- X-axis date ticks (left + right edge) -->
+                <text x="<?= $padLeft; ?>" y="<?= $padTop + $plotHeight + 24; ?>"
+                      fill="#666" font-size="11">
+                    <?= $escaper->escapeHtml(date('M j', $minTs)); ?>
+                </text>
+                <text x="<?= $padLeft + $plotWidth; ?>" y="<?= $padTop + $plotHeight + 24; ?>"
+                      fill="#666" font-size="11" text-anchor="end">
+                    <?= $escaper->escapeHtml(date('M j', $maxTs)); ?>
+                </text>
+
+                <!-- Series lines -->
+                <?php $seriesIndex = 0; ?>
+                <?php foreach ($data['series'] as $name => $points): ?>
+                    <?php
+                    $colour = $palette[$seriesIndex % count($palette)];
+                    $pathPoints = [];
+                    foreach ($points as $p) {
+                        $ts = $toTs($p['x']);
+                        $x = $padLeft + (($ts - $minTs) / max(1, $maxTs - $minTs)) * $plotWidth;
+                        $y = $padTop + $plotHeight - ((int) $p['y'] / 100) * $plotHeight;
+                        $pathPoints[] = sprintf('%.1f,%.1f', $x, $y);
+                    }
+                    ?>
+                    <!-- Line -->
+                    <polyline points="<?= implode(' ', $pathPoints); ?>"
+                              fill="none" stroke="<?= $colour; ?>" stroke-width="2"/>
+                    <!-- Dots on every data point -->
+                    <?php foreach ($points as $p):
+                        $ts = $toTs($p['x']);
+                        $x = $padLeft + (($ts - $minTs) / max(1, $maxTs - $minTs)) * $plotWidth;
+                        $y = $padTop + $plotHeight - ((int) $p['y'] / 100) * $plotHeight;
+                    ?>
+                        <circle cx="<?= sprintf('%.1f', $x); ?>" cy="<?= sprintf('%.1f', $y); ?>"
+                                r="3" fill="<?= $colour; ?>">
+                            <title><?= $escaper->escapeHtml($name . ' — ' . $p['x'] . ': ' . $p['y']); ?></title>
+                        </circle>
+                    <?php endforeach; ?>
+
+                    <!-- Legend entry -->
+                    <?php $legendY = $padTop + ($seriesIndex * 22); ?>
+                    <rect x="<?= $padLeft + $plotWidth + 16; ?>" y="<?= $legendY; ?>"
+                          width="14" height="3" fill="<?= $colour; ?>"/>
+                    <text x="<?= $padLeft + $plotWidth + 36; ?>" y="<?= $legendY + 6; ?>"
+                          fill="#333" font-size="11">
+                        <?= $escaper->escapeHtml(strlen($name) > 32 ? substr($name, 0, 30) . '…' : $name); ?>
+                    </text>
+
+                    <?php $seriesIndex++; ?>
+                <?php endforeach; ?>
+            </svg>
+
+            <!-- Recent runs table -->
+            <h2 style="margin:32px 0 14px 0; font-size:1.1em;"><?= $escaper->escapeHtml(__('Recent runs')); ?></h2>
+            <div style="border:1px solid #d6d6d6; border-radius:4px; overflow:hidden;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.9em;">
+                    <thead>
+                        <tr style="background:#f5f5f5;">
+                            <th style="padding:10px 14px; text-align:left;"><?= $escaper->escapeHtml(__('Run at')); ?></th>
+                            <th style="padding:10px 14px; text-align:left;"><?= $escaper->escapeHtml(__('URL')); ?></th>
+                            <th style="padding:10px 14px; text-align:left;"><?= $escaper->escapeHtml(__('Strategy')); ?></th>
+                            <th style="padding:10px 14px; text-align:right;"><?= $escaper->escapeHtml(__('Score')); ?></th>
+                            <th style="padding:10px 14px; text-align:right;"><?= $escaper->escapeHtml(__('LCP (lab)')); ?></th>
+                            <th style="padding:10px 14px; text-align:right;"><?= $escaper->escapeHtml(__('TBT')); ?></th>
+                            <th style="padding:10px 14px; text-align:right;"><?= $escaper->escapeHtml(__('CLS')); ?></th>
+                            <th style="padding:10px 14px; text-align:left;"><?= $escaper->escapeHtml(__('Status')); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($runs as $row): ?>
+                            <?php
+                            $score = isset($row['performance_score']) ? (int) $row['performance_score'] : null;
+                            $colour = $block->scoreColour($score);
+                            $statusOk = ($row['status'] ?? '') === 'ok';
+                            ?>
+                            <tr style="border-top:1px solid #eee;">
+                                <td style="padding:8px 14px; color:#555;"><?= $escaper->escapeHtml($row['run_at'] ?? ''); ?></td>
+                                <td style="padding:8px 14px; font-family:monospace; font-size:0.85em; color:#444; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="<?= $escaper->escapeHtmlAttr($row['url'] ?? ''); ?>">
+                                    <?= $escaper->escapeHtml($row['url'] ?? ''); ?>
+                                </td>
+                                <td style="padding:8px 14px;"><?= $escaper->escapeHtml($row['strategy'] ?? ''); ?></td>
+                                <td style="padding:8px 14px; text-align:right; font-weight:600; color:<?= $colour; ?>;">
+                                    <?= $score !== null ? $score : '—'; ?>
+                                </td>
+                                <td style="padding:8px 14px; text-align:right;">
+                                    <?= isset($row['lab_lcp_seconds']) && $row['lab_lcp_seconds'] !== null ? number_format((float) $row['lab_lcp_seconds'], 2) . 's' : '—'; ?>
+                                </td>
+                                <td style="padding:8px 14px; text-align:right;">
+                                    <?= isset($row['lab_tbt_ms']) && $row['lab_tbt_ms'] !== null ? (int) $row['lab_tbt_ms'] . 'ms' : '—'; ?>
+                                </td>
+                                <td style="padding:8px 14px; text-align:right;">
+                                    <?= isset($row['lab_cls']) && $row['lab_cls'] !== null ? number_format((float) $row['lab_cls'], 3) : '—'; ?>
+                                </td>
+                                <td style="padding:8px 14px;">
+                                    <?php if ($statusOk): ?>
+                                        <span style="color:#1f7a1f;">ok</span>
+                                    <?php else: ?>
+                                        <span style="color:#a02818;" title="<?= $escaper->escapeHtmlAttr($row['error_message'] ?? ''); ?>">failed</span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+        <?php endif; ?>
+    </div>
+</div>

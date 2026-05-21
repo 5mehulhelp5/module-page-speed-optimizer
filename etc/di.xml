@@ -9,6 +9,8 @@
                       xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\DiagnoseCommand</item>
                 <item name="etechflow_pso_verify"
                       xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\VerifyCommand</item>
+                <item name="etechflow_pso_history"
+                      xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\HistoryCommand</item>
             </argument>
         </arguments>
     </type>

@@ -2,7 +2,7 @@
     "name": "etechflow/module-page-speed-optimizer",
     "description": "Magento 2 Page Speed Optimizer — Google PageSpeed Insights diagnostic from the admin, score + recommendation tracking, ETechFlow-feature mapping. Code optimization (CSS/JS/HTML minification, defer fonts, prioritize resource loading) ships in v1.1+. Standalone or bundled with ETechFlow Image Optimizer for the full performance suite.",
     "type": "magento2-module",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "license": "proprietary",
     "authors": [
         {

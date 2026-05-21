@@ -52,6 +52,8 @@
                       xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\HistoryCommand</item>
                 <item name="etechflow_pso_optimize_images"
                       xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\OptimizeImagesCommand</item>
+                <item name="etechflow_pso_enable_js_bundling"
+                      xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\EnableJsBundlingCommand</item>
             </argument>
         </arguments>
     </type>

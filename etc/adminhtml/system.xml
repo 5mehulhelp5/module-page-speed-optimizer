@@ -14,71 +14,204 @@
 
             <group id="license" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>License</label>
-                <field id="license_key" translate="label comment" sortOrder="10" type="obscure"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="license_key" translate="label comment" sortOrder="10" type="obscure" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>License Key</label>
-                    <comment><![CDATA[Per-module key issued by eTechFlow for this host. Leave blank if using a Bundle License Key.]]></comment>
+                    <comment><![CDATA[Per-module key. Leave blank if using Bundle key.]]></comment>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
-                <field id="bundle_license_key" translate="label comment" sortOrder="20" type="obscure"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="bundle_license_key" translate="label comment" sortOrder="20" type="obscure" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Bundle License Key</label>
-                    <comment><![CDATA[Shared key activating every ETechFlow module on this host.]]></comment>
+                    <comment><![CDATA[Shared key activating every ETechFlow module.]]></comment>
                     <config_path>etechflow_bundle/license/license_key</config_path>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
-                <field id="production_environment" translate="label comment" sortOrder="30" type="select"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="production_environment" translate="label comment" sortOrder="30" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Production Environment</label>
-                    <comment><![CDATA[Set to No on staging/dev to bypass licensing. Most dev hostnames auto-detect.]]></comment>
+                    <comment><![CDATA[Set to No on staging/dev to bypass licensing.]]></comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
 
             <group id="general" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>General Settings</label>
-                <field id="enabled" translate="label comment" sortOrder="10" type="select"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="enabled" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Module Enabled</label>
-                    <comment><![CDATA[Turn the whole module on/off without uninstalling.]]></comment>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
             </group>
 
             <group id="psi" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Google PageSpeed Insights</label>
-                <comment><![CDATA[Connects to Google's PageSpeed Insights API so you can run real-world diagnostic scans from the admin (Stores → Settings → Page Speed Diagnose).
-                <br><br>
-                <strong>One-time setup (~3 min)</strong>:
-                <ol>
-                  <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">console.cloud.google.com/apis/credentials</a></li>
-                  <li>Click "Create Credentials → API Key" (free)</li>
-                  <li>Enable "PageSpeed Insights API" on the project (free, 25,000 requests/day)</li>
-                  <li>Paste the key below.</li>
-                </ol>]]></comment>
-                <field id="api_key" translate="label comment" sortOrder="10" type="obscure"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Google PageSpeed Insights (Diagnostic)</label>
+                <comment><![CDATA[<strong>One-time setup (~3 min)</strong>: Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">console.cloud.google.com/apis/credentials</a> → Create Credentials → API Key → enable PageSpeed Insights API → paste key below.]]></comment>
+                <field id="api_key" translate="label comment" sortOrder="10" type="obscure" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>PageSpeed Insights API Key</label>
-                    <comment><![CDATA[Free Google Cloud API key. Without it, diagnostic still works but you'll hit Google's per-IP rate limit (~1 request/second). Strongly recommended.]]></comment>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
-                <field id="default_strategy" translate="label comment" sortOrder="20" type="select"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="default_strategy" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Default Strategy</label>
-                    <comment><![CDATA[Which PageSpeed score to fetch by default. Mobile is what Google ranks against (mobile-first indexing); desktop is informational.]]></comment>
                     <source_model>ETechFlow\PageSpeedOptimizer\Model\Source\PsiStrategy</source_model>
                 </field>
-                <field id="timeout_seconds" translate="label comment" sortOrder="30" type="text"
-                       showInDefault="1" showInWebsite="1" showInStore="1">
+                <field id="timeout_seconds" translate="label comment" sortOrder="30" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>API Timeout (seconds)</label>
-                    <comment><![CDATA[PageSpeed Insights typically takes 15-45s per page. Default 90s gives generous headroom.]]></comment>
                     <validate>validate-digits validate-greater-than-zero</validate>
                 </field>
             </group>
 
-            <group id="code_optimization" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
-                <label>Code Optimization (v1.1+ — coming soon)</label>
-                <comment><![CDATA[These features are in development for v1.1: HTML / CSS / JavaScript minification, Defer Fonts Loading, Prioritize Resource Loading, Critical CSS extraction, Performance Budgets, Hyvä Mode. v1.0 ships the PSI Diagnose tool only.]]></comment>
+            <group id="image" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Image Optimization</label>
+                <comment><![CDATA[Convert catalog images to WebP/AVIF, emit &lt;picture&gt; blocks, lazy-load below-the-fold images. Use <strong>bin/magento etechflow:pso:optimize-images</strong> to bulk-convert.]]></comment>
+                <field id="enabled" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Image Optimization</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="quality" translate="label comment" sortOrder="20" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>WebP / AVIF Quality (1-100)</label>
+                    <comment><![CDATA[80 is the recommended sweet spot.]]></comment>
+                    <validate>validate-digits validate-digits-range digits-range-1-100</validate>
+                </field>
+                <field id="engine_order" translate="label comment" sortOrder="30" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>WebP Engine Priority Order</label>
+                    <comment><![CDATA[Comma-separated. Default: <code>cwebp,imagick,gd</code>. First available wins. AVIF uses its own priority: <code>cavif,imagick,gd</code>.]]></comment>
+                </field>
+                <field id="batch_size" translate="label comment" sortOrder="40" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Bulk CLI batch size</label>
+                    <comment><![CDATA[Default 200.]]></comment>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                </field>
+                <field id="picture_block" translate="label comment" sortOrder="50" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Emit &lt;picture&gt; blocks</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="lazy_load" translate="label comment" sortOrder="60" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Lazy-loading</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="lazy_load_script" translate="label comment" sortOrder="65" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Lazy-Load Script</label>
+                    <comment><![CDATA[Native (loading="lazy") is the right choice in 2026 — zero JS, 98%+ browser support. Other options for legacy themes.]]></comment>
+                    <source_model>ETechFlow\PageSpeedOptimizer\Model\Source\LazyLoadScript</source_model>
+                    <depends><field id="lazy_load">1</field></depends>
+                </field>
+                <field id="coverage_product" translate="label comment" sortOrder="70" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Product cache (pub/media/catalog/product/cache)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="coverage_category" translate="label comment" sortOrder="80" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Category images (pub/media/catalog/category)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="coverage_cms" translate="label comment" sortOrder="90" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>CMS / Page Builder (pub/media/wysiwyg)</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="avif_enabled" translate="label comment" sortOrder="100" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Generate AVIF format (next-gen, ~30-50% smaller than WebP)</label>
+                    <comment><![CDATA[Requires <code>cavif</code> binary or ImageMagick/GD compiled with libavif.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="source_compress" translate="label comment" sortOrder="110" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Compress source JPEG/PNG/GIF files in place</label>
+                    <comment><![CDATA[Requires <code>jpegoptim</code> / <code>pngquant</code> / <code>gifsicle</code> binaries.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="auto_optimize_on_upload" translate="label comment" sortOrder="120" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Auto-optimize newly uploaded product images</label>
+                    <comment><![CDATA[Observer on catalog_product_save_after. Synchronous in admin save.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="resize_enabled" translate="label comment" sortOrder="130" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Generate responsive variants (mobile + tablet)</label>
+                    <comment><![CDATA[For each source: emit <code>.mobile.webp</code> + <code>.tablet.webp</code> at configured widths. <code>&lt;picture&gt;</code> emits responsive <code>&lt;source media&gt;</code> tags. Needs Imagick or GD.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="resize_algorithm" translate="label comment" sortOrder="140" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Resize Algorithm</label>
+                    <source_model>ETechFlow\PageSpeedOptimizer\Model\Source\ResizeAlgorithm</source_model>
+                    <depends><field id="resize_enabled">1</field></depends>
+                </field>
+                <field id="mobile_width" translate="label comment" sortOrder="150" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Mobile variant width (px)</label>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                    <depends><field id="resize_enabled">1</field></depends>
+                </field>
+                <field id="tablet_width" translate="label comment" sortOrder="160" type="text" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Tablet variant width (px)</label>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                    <depends><field id="resize_enabled">1</field></depends>
+                </field>
+            </group>
+
+            <group id="code" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Code Optimization</label>
+                <comment><![CDATA[Runtime HTML/CSS/JS optimizations. <strong>Test on staging first</strong> — JS defer can break themes that rely on synchronous script execution.]]></comment>
+                <field id="html_minify" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>HTML Minification</label>
+                    <comment><![CDATA[Strips whitespace, comments, line breaks. 10-20% reduction typical.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="html_minify_exclude_urls" translate="label comment" sortOrder="20" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>HTML Minify — Exclude URLs</label>
+                    <comment><![CDATA[One URL substring per line.]]></comment>
+                    <depends><field id="html_minify">1</field></depends>
+                </field>
+                <field id="js_defer" translate="label comment" sortOrder="30" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Defer JavaScript</label>
+                    <comment><![CDATA[Adds <code>defer</code> attribute to external scripts.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="js_defer_exclude_urls" translate="label comment" sortOrder="40" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>JS Defer — Exclude URLs</label>
+                    <comment><![CDATA[Default excludes checkout + cart.]]></comment>
+                    <depends><field id="js_defer">1</field></depends>
+                </field>
+                <field id="defer_fonts" translate="label comment" sortOrder="50" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Defer Fonts Loading</label>
+                    <comment><![CDATA[Adds <code>font-display: swap</code>. Fixes FOIT, improves CLS.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="defer_fonts_exclude_families" translate="label comment" sortOrder="60" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Defer Fonts — Exclude Families</label>
+                    <comment><![CDATA[One font-family per line. Excluded fonts use <code>font-display: block</code>.]]></comment>
+                    <depends><field id="defer_fonts">1</field></depends>
+                </field>
+                <field id="server_push" translate="label comment" sortOrder="70" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Server Push / Resource Preload</label>
+                    <comment><![CDATA[Sets <code>Link: rel=preload</code> headers.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="preload_urls" translate="label comment" sortOrder="80" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Server Push — Preload URLs</label>
+                    <comment><![CDATA[Absolute URLs to preload on every page.]]></comment>
+                    <depends><field id="server_push">1</field></depends>
+                </field>
+            </group>
+
+            <group id="code_extras" translate="label" sortOrder="55" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Code Optimization (additional)</label>
+                <field id="css_minify" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>CSS Minification (inline &lt;style&gt; blocks)</label>
+                    <comment><![CDATA[Targets inline CSS only — external CSS files use Magento's setup:static-content:deploy.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="move_print_css_footer" translate="label comment" sortOrder="20" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Move Print CSS to footer</label>
+                    <comment><![CDATA[Defers <code>&lt;link rel="stylesheet" media="print"&gt;</code> until after main content.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
+            <group id="bfcache" translate="label" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Back/Forward Cache (bfcache)</label>
+                <comment><![CDATA[Allows browsers to render back/forward navigation INSTANTLY from in-memory cache.]]></comment>
+                <field id="enabled" translate="label comment" sortOrder="10" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable bfcache compatibility</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="exclude_urls" translate="label comment" sortOrder="20" type="textarea" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude URLs (always private)</label>
+                    <comment><![CDATA[One URL substring per line. Defaults: checkout, cart, customer/account.]]></comment>
+                    <depends><field id="enabled">1</field></depends>
+                </field>
             </group>
         </section>
     </system>

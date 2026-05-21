@@ -13,6 +13,43 @@
                 <default_strategy>mobile</default_strategy>
                 <timeout_seconds>90</timeout_seconds>
             </psi>
+            <image>
+                <enabled>1</enabled>
+                <quality>80</quality>
+                <engine_order>cwebp,imagick,gd</engine_order>
+                <batch_size>200</batch_size>
+                <picture_block>1</picture_block>
+                <lazy_load>1</lazy_load>
+                <coverage_product>1</coverage_product>
+                <coverage_category>1</coverage_category>
+                <coverage_cms>0</coverage_cms>
+                <avif_enabled>0</avif_enabled>
+                <source_compress>0</source_compress>
+                <auto_optimize_on_upload>0</auto_optimize_on_upload>
+                <resize_enabled>0</resize_enabled>
+                <resize_algorithm>fit</resize_algorithm>
+                <mobile_width>480</mobile_width>
+                <tablet_width>768</tablet_width>
+                <lazy_load_script>native</lazy_load_script>
+            </image>
+            <code>
+                <html_minify>0</html_minify>
+                <js_defer>0</js_defer>
+                <js_defer_exclude_urls>checkout
+cart</js_defer_exclude_urls>
+                <defer_fonts>0</defer_fonts>
+                <server_push>0</server_push>
+            </code>
+            <code_extras>
+                <css_minify>0</css_minify>
+                <move_print_css_footer>0</move_print_css_footer>
+            </code_extras>
+            <bfcache>
+                <enabled>1</enabled>
+                <exclude_urls>checkout
+cart
+customer/account</exclude_urls>
+            </bfcache>
         </etechflow_pso>
     </default>
 </config>

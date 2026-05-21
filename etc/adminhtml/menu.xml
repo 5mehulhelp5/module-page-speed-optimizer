@@ -23,5 +23,12 @@
              parent="Magento_Backend::system_other_settings"
              action="etechflow_pso/optimizationlog/index"
              resource="ETechFlow_PageSpeedOptimizer::optimizationlog"/>
+        <add id="ETechFlow_PageSpeedOptimizer::crontasks"
+             title="Cron Tasks List"
+             module="ETechFlow_PageSpeedOptimizer"
+             sortOrder="53"
+             parent="Magento_Backend::system_other_settings"
+             action="etechflow_pso/crontasks/index"
+             resource="ETechFlow_PageSpeedOptimizer::crontasks"/>
     </menu>
 </config>

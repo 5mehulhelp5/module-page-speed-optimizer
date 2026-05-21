@@ -39,9 +39,18 @@ class Config
     public const XML_PATH_IMG_SOURCE_COMPRESS = 'etechflow_pso/image/source_compress';
     public const XML_PATH_IMG_AUTO_UPLOAD  = 'etechflow_pso/image/auto_optimize_on_upload';
 
-    // Code Optimization (new in v2.0)
+    // Image Resize (new in v2.2)
+    public const XML_PATH_IMG_RESIZE       = 'etechflow_pso/image/resize_enabled';
+    public const XML_PATH_IMG_RESIZE_ALGO  = 'etechflow_pso/image/resize_algorithm';
+    public const XML_PATH_IMG_MOBILE_W     = 'etechflow_pso/image/mobile_width';
+    public const XML_PATH_IMG_TABLET_W     = 'etechflow_pso/image/tablet_width';
+    public const XML_PATH_LAZY_SCRIPT      = 'etechflow_pso/image/lazy_load_script';
+
+    // Code Optimization (new in v2.0; split toggles in v2.2)
     public const XML_PATH_HTML_MINIFY      = 'etechflow_pso/code/html_minify';
     public const XML_PATH_HTML_MINIFY_EXCLUDE = 'etechflow_pso/code/html_minify_exclude_urls';
+    public const XML_PATH_CSS_MINIFY       = 'etechflow_pso/code/css_minify';
+    public const XML_PATH_MOVE_PRINT_CSS_FOOTER = 'etechflow_pso/code/move_print_css_footer';
     public const XML_PATH_JS_DEFER         = 'etechflow_pso/code/js_defer';
     public const XML_PATH_JS_DEFER_EXCLUDE = 'etechflow_pso/code/js_defer_exclude_urls';
     public const XML_PATH_DEFER_FONTS      = 'etechflow_pso/code/defer_fonts';
@@ -183,6 +192,59 @@ class Config
             return false;
         }
         return $this->scopeConfig->isSetFlag(self::XML_PATH_IMG_AUTO_UPLOAD, ScopeInterface::SCOPE_STORE);
+    }
+
+    public function isImageResizeEnabled(): bool
+    {
+        if (!$this->isImageOptimizationEnabled()) {
+            return false;
+        }
+        return $this->scopeConfig->isSetFlag(self::XML_PATH_IMG_RESIZE, ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getImageResizeAlgorithm(): string
+    {
+        $value = (string) $this->scopeConfig->getValue(self::XML_PATH_IMG_RESIZE_ALGO, ScopeInterface::SCOPE_STORE);
+        return in_array($value, ['fit', 'crop'], true) ? $value : 'fit';
+    }
+
+    public function getMobileVariantWidth(): int
+    {
+        $value = (int) $this->scopeConfig->getValue(self::XML_PATH_IMG_MOBILE_W, ScopeInterface::SCOPE_STORE);
+        return $value > 0 ? $value : 480;
+    }
+
+    public function getTabletVariantWidth(): int
+    {
+        $value = (int) $this->scopeConfig->getValue(self::XML_PATH_IMG_TABLET_W, ScopeInterface::SCOPE_STORE);
+        return $value > 0 ? $value : 768;
+    }
+
+    /** Returns one of: native | vanilla | lozad | jquery. */
+    public function getLazyLoadScript(): string
+    {
+        $value = (string) $this->scopeConfig->getValue(self::XML_PATH_LAZY_SCRIPT, ScopeInterface::SCOPE_STORE);
+        return in_array($value, ['native', 'vanilla', 'lozad', 'jquery'], true) ? $value : 'native';
+    }
+
+    public function isCssMinifyEnabled(): bool
+    {
+        if (!$this->isEnabled()) {
+            return false;
+        }
+        // Fall back to HTML toggle for v2.1 customers who haven't reconfigured
+        if ($this->scopeConfig->getValue(self::XML_PATH_CSS_MINIFY, ScopeInterface::SCOPE_STORE) === null) {
+            return $this->isHtmlMinifyEnabled();
+        }
+        return $this->scopeConfig->isSetFlag(self::XML_PATH_CSS_MINIFY, ScopeInterface::SCOPE_STORE);
+    }
+
+    public function isMovePrintCssToFooterEnabled(): bool
+    {
+        if (!$this->isEnabled()) {
+            return false;
+        }
+        return $this->scopeConfig->isSetFlag(self::XML_PATH_MOVE_PRINT_CSS_FOOTER, ScopeInterface::SCOPE_STORE);
     }
 
     // ─────────────────────────────────────────────────────────

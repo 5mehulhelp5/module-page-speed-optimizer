@@ -40,9 +40,7 @@ class CssMinifierPlugin
 
     public function beforeSendResponse(HttpResponse $subject): array
     {
-        if (!$this->config->isHtmlMinifyEnabled()) {
-            // CSS minify is enabled together with HTML minify in v2.1 —
-            // same toggle, until v2.2 splits them.
+        if (!$this->config->isCssMinifyEnabled()) {
             return [];
         }
         if (!$this->shouldProcess($subject)) {

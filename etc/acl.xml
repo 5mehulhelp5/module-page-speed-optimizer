@@ -27,6 +27,9 @@
                             <resource id="ETechFlow_PageSpeedOptimizer::optimizationlog_restore"
                                       title="Restore originals (delete WebP files)"/>
                         </resource>
+                        <resource id="ETechFlow_PageSpeedOptimizer::crontasks"
+                                  title="ETechFlow Cron Tasks List"
+                                  sortOrder="53"/>
                     </resource>
                 </resource>
             </resource>

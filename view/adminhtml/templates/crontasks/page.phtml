@@ -1,0 +1,90 @@
+<?php
+/**
+ * @var \ETechFlow\PageSpeedOptimizer\Block\Adminhtml\CronTasks\Page $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$jobs = $block->getRecentJobs(50);
+$counts = $block->getStatusCounts();
+?>
+
+<div style="max-width:1180px;">
+    <div style="background:#fff; border:1px solid #d6d6d6; border-radius:4px; padding:22px; margin-bottom:18px;">
+        <h2 style="margin:0 0 12px 0; font-size:1.15em;">
+            <?= $escaper->escapeHtml(__('Cron status — last 24 hours')); ?>
+        </h2>
+        <div style="display:flex; gap:18px; flex-wrap:wrap;">
+            <?php foreach ($counts as $status => $count): ?>
+                <div style="padding:10px 16px; border-radius:4px; border:1px solid #ddd; background:#fafafa;">
+                    <div style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:0.5px;">
+                        <?= $escaper->escapeHtml($status); ?>
+                    </div>
+                    <div style="font-size:24px; font-weight:600; color:<?= $block->statusColour($status); ?>;">
+                        <?= (int) $count; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div style="background:#fff; border:1px solid #d6d6d6; border-radius:4px; overflow:hidden;">
+        <div style="padding:14px 18px; background:#f5f5f5; border-bottom:1px solid #d6d6d6; font-weight:600;">
+            <?= $escaper->escapeHtml(__('Recent jobs')); ?> (<?= count($jobs); ?>)
+        </div>
+        <?php if (empty($jobs)): ?>
+            <div style="padding:32px; text-align:center; color:#777;">
+                <?= $escaper->escapeHtml(__('No cron jobs in the schedule table yet. If your store is brand new, cron may not have run. Verify with: bin/magento cron:run')); ?>
+            </div>
+        <?php else: ?>
+            <table style="width:100%; border-collapse:collapse; font-size:0.9em;">
+                <thead>
+                    <tr style="background:#fafafa;">
+                        <th style="padding:8px 14px; text-align:left;"><?= $escaper->escapeHtml(__('ID')); ?></th>
+                        <th style="padding:8px 14px; text-align:left;"><?= $escaper->escapeHtml(__('Job code')); ?></th>
+                        <th style="padding:8px 14px; text-align:left;"><?= $escaper->escapeHtml(__('Status')); ?></th>
+                        <th style="padding:8px 14px; text-align:left;"><?= $escaper->escapeHtml(__('Scheduled at')); ?></th>
+                        <th style="padding:8px 14px; text-align:left;"><?= $escaper->escapeHtml(__('Executed at')); ?></th>
+                        <th style="padding:8px 14px; text-align:right;"><?= $escaper->escapeHtml(__('Duration')); ?></th>
+                        <th style="padding:8px 14px; text-align:left;"><?= $escaper->escapeHtml(__('Message')); ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($jobs as $job): ?>
+                        <?php
+                        $status = (string) ($job['status'] ?? '');
+                        $colour = $block->statusColour($status);
+                        $duration = $block->getDurationSeconds(
+                            $job['executed_at'] ?? null,
+                            $job['finished_at'] ?? null
+                        );
+                        $message = (string) ($job['messages'] ?? '');
+                        $message = strlen($message) > 80 ? substr($message, 0, 78) . '…' : $message;
+                        ?>
+                        <tr style="border-top:1px solid #eee;">
+                            <td style="padding:7px 14px; color:#888;"><?= (int) $job['schedule_id']; ?></td>
+                            <td style="padding:7px 14px; font-family:monospace; font-size:0.85em; color:#333;">
+                                <?= $escaper->escapeHtml((string) $job['job_code']); ?>
+                            </td>
+                            <td style="padding:7px 14px;">
+                                <span style="display:inline-block; padding:2px 8px; border-radius:3px; font-size:0.8em; font-weight:600; background:<?= $colour; ?>14; color:<?= $colour; ?>;">
+                                    <?= $escaper->escapeHtml(strtoupper($status)); ?>
+                                </span>
+                            </td>
+                            <td style="padding:7px 14px; color:#555; font-size:0.85em;">
+                                <?= $escaper->escapeHtml((string) ($job['scheduled_at'] ?? '')); ?>
+                            </td>
+                            <td style="padding:7px 14px; color:#555; font-size:0.85em;">
+                                <?= $escaper->escapeHtml((string) ($job['executed_at'] ?? '—')); ?>
+                            </td>
+                            <td style="padding:7px 14px; text-align:right; font-size:0.85em; color:#555;">
+                                <?= $duration !== null ? $escaper->escapeHtml($duration . 's') : '—'; ?>
+                            </td>
+                            <td style="padding:7px 14px; font-size:0.8em; color:#666;" title="<?= $escaper->escapeHtmlAttr((string) ($job['messages'] ?? '')); ?>">
+                                <?= $escaper->escapeHtml($message); ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
+</div>

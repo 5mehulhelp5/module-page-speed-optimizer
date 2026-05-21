@@ -16,5 +16,12 @@
              parent="Magento_Backend::system_other_settings"
              action="etechflow_pso/trends/index"
              resource="ETechFlow_PageSpeedOptimizer::trends"/>
+        <add id="ETechFlow_PageSpeedOptimizer::optimizationlog"
+             title="Image Optimization Log"
+             module="ETechFlow_PageSpeedOptimizer"
+             sortOrder="52"
+             parent="Magento_Backend::system_other_settings"
+             action="etechflow_pso/optimizationlog/index"
+             resource="ETechFlow_PageSpeedOptimizer::optimizationlog"/>
     </menu>
 </config>

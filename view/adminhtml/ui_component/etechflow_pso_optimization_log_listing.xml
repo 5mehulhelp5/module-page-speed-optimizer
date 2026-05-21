@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<listing xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">etechflow_pso_optimization_log_listing.etechflow_pso_optimization_log_listing_data_source</item>
+        </item>
+    </argument>
+
+    <settings>
+        <spinner>etechflow_pso_optimizationlog_columns</spinner>
+        <deps>
+            <dep>etechflow_pso_optimization_log_listing.etechflow_pso_optimization_log_listing_data_source</dep>
+        </deps>
+    </settings>
+
+    <dataSource name="etechflow_pso_optimization_log_listing_data_source" component="Magento_Ui/js/grid/provider">
+        <settings>
+            <storageConfig>
+                <param name="indexField" xsi:type="string">log_id</param>
+            </storageConfig>
+            <updateUrl path="mui/index/render"/>
+        </settings>
+        <aclResource>ETechFlow_PageSpeedOptimizer::log</aclResource>
+        <dataProvider class="ETechFlowIoLogGridDataProvider"
+                      name="etechflow_pso_optimization_log_listing_data_source">
+            <settings>
+                <requestFieldName>log_id</requestFieldName>
+                <primaryFieldName>log_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+
+    <listingToolbar name="listing_top">
+        <settings>
+            <sticky>true</sticky>
+        </settings>
+        <bookmark name="bookmarks"/>
+        <columnsControls name="columns_controls"/>
+        <filterSearch name="fulltext"/>
+        <filters name="listing_filters"/>
+        <massaction name="listing_massaction">
+            <action name="delete">
+                <settings>
+                    <type>delete</type>
+                    <label translate="true">Delete log entries (keep WebP files)</label>
+                    <url path="etechflow_pso/optimizationlog/massDelete"/>
+                    <confirm>
+                        <title translate="true">Delete log entries</title>
+                        <message translate="true">Remove these log rows? The corresponding .webp files on disk will be untouched — they can be re-logged by running etechflow:pso:optimize-images.</message>
+                    </confirm>
+                </settings>
+            </action>
+            <action name="restore">
+                <settings>
+                    <type>restore</type>
+                    <label translate="true">Restore originals (delete WebP + log)</label>
+                    <url path="etechflow_pso/optimizationlog/massRestore"/>
+                    <confirm>
+                        <title translate="true">Restore originals</title>
+                        <message translate="true">This will delete the .webp file from disk AND remove the log row, for each selected entry. Browsers will fall back to serving the original JPEG/PNG. Proceed?</message>
+                    </confirm>
+                </settings>
+            </action>
+        </massaction>
+        <paging name="listing_paging"/>
+    </listingToolbar>
+
+    <columns name="etechflow_pso_optimizationlog_columns">
+        <selectionsColumn name="ids">
+            <settings>
+                <indexField>log_id</indexField>
+            </settings>
+        </selectionsColumn>
+
+        <column name="log_id">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">ID</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+
+        <column name="source_path">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Source path</label>
+            </settings>
+        </column>
+
+        <column name="format_from">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">From</label>
+            </settings>
+        </column>
+
+        <column name="format_to">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">To</label>
+            </settings>
+        </column>
+
+        <column name="bytes_before">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Bytes before</label>
+            </settings>
+        </column>
+
+        <column name="bytes_after">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Bytes after</label>
+            </settings>
+        </column>
+
+        <column name="savings_pct">
+            <settings>
+                <filter>textRange</filter>
+                <label translate="true">Savings %</label>
+                <sorting>desc</sorting>
+            </settings>
+        </column>
+
+        <column name="engine">
+            <settings>
+                <filter>text</filter>
+                <label translate="true">Engine</label>
+            </settings>
+        </column>
+
+        <column name="status" component="Magento_Ui/js/grid/columns/select">
+            <settings>
+                <options class="ETechFlow\PageSpeedOptimizer\Model\Source\OptimizationStatusOptions"/>
+                <filter>select</filter>
+                <dataType>select</dataType>
+                <label translate="true">Status</label>
+            </settings>
+        </column>
+
+        <column name="optimized_at" class="Magento\Ui\Component\Listing\Columns\Date" component="Magento_Ui/js/grid/columns/date">
+            <settings>
+                <filter>dateRange</filter>
+                <dataType>date</dataType>
+                <label translate="true">Optimized at</label>
+            </settings>
+        </column>
+    </columns>
+</listing>

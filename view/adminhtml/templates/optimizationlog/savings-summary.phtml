@@ -1,0 +1,50 @@
+<?php
+/**
+ * @var \ETechFlow\PageSpeedOptimizer\Block\Adminhtml\Log\SavingsSummary $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$s = $block->getSummary();
+$saved = max(0, $s['bytes_before'] - $s['bytes_after']);
+?>
+<div style="background:#fff; border:1px solid #d6d6d6; border-radius:4px; padding:18px 22px; margin-bottom:18px; display:flex; gap:32px; flex-wrap:wrap;">
+    <div>
+        <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">
+            <?= $escaper->escapeHtml(__('Images optimized')); ?>
+        </div>
+        <div style="font-size:28px; font-weight:600; color:#222;">
+            <?= number_format($s['count']); ?>
+        </div>
+    </div>
+    <div>
+        <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">
+            <?= $escaper->escapeHtml(__('Source total')); ?>
+        </div>
+        <div style="font-size:28px; font-weight:600; color:#222;">
+            <?= $escaper->escapeHtml($block->formatBytes($s['bytes_before'])); ?>
+        </div>
+    </div>
+    <div>
+        <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">
+            <?= $escaper->escapeHtml(__('WebP total')); ?>
+        </div>
+        <div style="font-size:28px; font-weight:600; color:#222;">
+            <?= $escaper->escapeHtml($block->formatBytes($s['bytes_after'])); ?>
+        </div>
+    </div>
+    <div>
+        <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">
+            <?= $escaper->escapeHtml(__('Saved on disk')); ?>
+        </div>
+        <div style="font-size:28px; font-weight:600; color:#1f7a1f;">
+            <?= $escaper->escapeHtml($block->formatBytes($saved)); ?>
+        </div>
+    </div>
+    <div>
+        <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">
+            <?= $escaper->escapeHtml(__('Avg savings')); ?>
+        </div>
+        <div style="font-size:28px; font-weight:600; color:#1f7a1f;">
+            <?= (int) $s['avg_savings_pct']; ?>%
+        </div>
+    </div>
+</div>

@@ -19,7 +19,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * `bin/magento etechflow:pso:verify` — 10-check smoke test.
  *
- * 10 PASS lines = green-light go-live. Same shape as etechflow:io:verify,
+ * 10 PASS lines = green-light go-live. Same shape as etechflow:pso:verify,
  * etechflow:isp:verify, etechflow:bisn:verify.
  */
 class VerifyCommand extends Command

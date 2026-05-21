@@ -19,6 +19,14 @@
                         <resource id="ETechFlow_PageSpeedOptimizer::trends"
                                   title="ETechFlow Page Speed Trends"
                                   sortOrder="51"/>
+                        <resource id="ETechFlow_PageSpeedOptimizer::optimizationlog"
+                                  title="ETechFlow Image Optimization Log"
+                                  sortOrder="52">
+                            <resource id="ETechFlow_PageSpeedOptimizer::optimizationlog_delete"
+                                      title="Delete log entries"/>
+                            <resource id="ETechFlow_PageSpeedOptimizer::optimizationlog_restore"
+                                      title="Restore originals (delete WebP files)"/>
+                        </resource>
                     </resource>
                 </resource>
             </resource>

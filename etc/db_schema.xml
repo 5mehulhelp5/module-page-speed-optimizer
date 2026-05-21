@@ -4,77 +4,87 @@
 
     <!--
         etechflow_pso_diagnostic_log
-        ─────────────────────────────────────────────────────────────
-        One row per PSI diagnostic run. Lab + CrUX field metrics + raw JSON
-        for future re-parsing as we extract more metrics in v1.1+.
-
-        Constraints applied from lessons learned in IO v1.2.0:
-        - url length 512 (NOT 1024) — InnoDB utf8mb4 index needs ≤ 3072 bytes
-          per key; 512 × 4 = 2048 bytes leaves comfortable headroom
-        - <index> elements DO NOT have `comment` attribute (Magento XSD limit)
-        - Composite indexes avoided when the lead column is long (varchar)
+        Lab + CrUX field metrics for each PSI diagnostic run.
     -->
     <table name="etechflow_pso_diagnostic_log" resource="default" engine="innodb"
-           comment="ETechFlow PSO — PSI diagnostic runs (lab + CrUX field metrics)">
+           comment="ETechFlow PSO — PSI diagnostic runs">
 
         <column xsi:type="int" name="log_id" padding="10" unsigned="true" nullable="false" identity="true"
                 comment="Primary key"/>
-
         <column xsi:type="varchar" name="url" length="512" nullable="false"
                 comment="The URL that was analysed"/>
-
         <column xsi:type="varchar" name="strategy" length="16" nullable="false" default="mobile"
                 comment="mobile | desktop"/>
-
         <column xsi:type="smallint" name="performance_score" padding="6" nullable="true"
-                comment="Lighthouse performance score 0-100 (NULL = run failed)"/>
-
-        <column xsi:type="decimal" name="lab_fcp_seconds" scale="3" precision="6" nullable="true"
-                comment="First Contentful Paint (lab, seconds)"/>
-
-        <column xsi:type="decimal" name="lab_lcp_seconds" scale="3" precision="6" nullable="true"
-                comment="Largest Contentful Paint (lab, seconds)"/>
-
-        <column xsi:type="decimal" name="lab_tbt_ms" scale="0" precision="6" nullable="true"
-                comment="Total Blocking Time (lab, ms) — INP proxy"/>
-
-        <column xsi:type="decimal" name="lab_cls" scale="3" precision="4" nullable="true"
-                comment="Cumulative Layout Shift (lab)"/>
-
-        <column xsi:type="decimal" name="field_lcp_ms" scale="0" precision="6" nullable="true"
-                comment="CrUX real-user LCP (ms; NULL if URL lacks Chrome user traffic)"/>
-
-        <column xsi:type="decimal" name="field_inp_ms" scale="0" precision="6" nullable="true"
-                comment="CrUX real-user INP (ms)"/>
-
-        <column xsi:type="decimal" name="field_cls" scale="3" precision="4" nullable="true"
-                comment="CrUX real-user CLS"/>
-
-        <column xsi:type="varchar" name="field_category" length="16" nullable="true"
-                comment="CrUX overall: FAST | AVERAGE | SLOW"/>
-
-        <column xsi:type="varchar" name="status" length="20" nullable="false" default="ok"
-                comment="ok | failed"/>
-
-        <column xsi:type="text" name="error_message" nullable="true"
-                comment="Surface failure cause when status=failed"/>
-
-        <column xsi:type="mediumtext" name="raw_json" nullable="true"
-                comment="Full PSI JSON response — for re-parsing if v1.1+ extracts more metrics"/>
-
+                comment="Lighthouse score 0-100 (NULL = failed)"/>
+        <column xsi:type="decimal" name="lab_fcp_seconds" scale="3" precision="6" nullable="true" comment="FCP (lab, seconds)"/>
+        <column xsi:type="decimal" name="lab_lcp_seconds" scale="3" precision="6" nullable="true" comment="LCP (lab, seconds)"/>
+        <column xsi:type="decimal" name="lab_tbt_ms" scale="0" precision="6" nullable="true" comment="TBT (lab, ms)"/>
+        <column xsi:type="decimal" name="lab_cls" scale="3" precision="4" nullable="true" comment="CLS (lab)"/>
+        <column xsi:type="decimal" name="field_lcp_ms" scale="0" precision="6" nullable="true" comment="CrUX LCP (ms)"/>
+        <column xsi:type="decimal" name="field_inp_ms" scale="0" precision="6" nullable="true" comment="CrUX INP (ms)"/>
+        <column xsi:type="decimal" name="field_cls" scale="3" precision="4" nullable="true" comment="CrUX CLS"/>
+        <column xsi:type="varchar" name="field_category" length="16" nullable="true" comment="CrUX overall"/>
+        <column xsi:type="varchar" name="status" length="20" nullable="false" default="ok" comment="ok | failed"/>
+        <column xsi:type="text" name="error_message" nullable="true" comment="Failure cause"/>
+        <column xsi:type="mediumtext" name="raw_json" nullable="true" comment="Full PSI JSON response"/>
         <column xsi:type="timestamp" name="run_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
                 comment="When the diagnostic ran"/>
 
         <constraint xsi:type="primary" referenceId="PRIMARY">
             <column name="log_id"/>
         </constraint>
-
         <index referenceId="ETF_PSO_DIAG_IDX_URL" indexType="btree">
             <column name="url"/>
         </index>
-
         <index referenceId="ETF_PSO_DIAG_IDX_DATE" indexType="btree">
             <column name="run_at"/>
+        </index>
+    </table>
+
+    <!--
+        etechflow_pso_optimization_log
+        One row per image converted. Drives the admin grid + savings banner.
+        Lifted from IO with the same column shape.
+    -->
+    <table name="etechflow_pso_optimization_log" resource="default" engine="innodb"
+           comment="ETechFlow PSO — image optimization audit log">
+
+        <column xsi:type="int" name="log_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Primary key"/>
+        <column xsi:type="varchar" name="source_path" length="512" nullable="false"
+                comment="Source image path (relative to pub/media)"/>
+        <column xsi:type="varchar" name="output_path" length="512" nullable="false"
+                comment="Output WebP path"/>
+        <column xsi:type="varchar" name="format_from" length="16" nullable="false" comment="jpg/png/gif"/>
+        <column xsi:type="varchar" name="format_to" length="16" nullable="false" comment="webp"/>
+        <column xsi:type="int" name="bytes_before" padding="10" unsigned="true" nullable="false" comment="Source bytes"/>
+        <column xsi:type="int" name="bytes_after" padding="10" unsigned="true" nullable="false" comment="Output bytes"/>
+        <column xsi:type="decimal" name="savings_pct" scale="2" precision="5" nullable="false" comment="(1 - after/before) * 100"/>
+        <column xsi:type="varchar" name="engine" length="16" nullable="false" comment="cwebp | imagick | gd"/>
+        <column xsi:type="int" name="source_mtime" padding="11" unsigned="true" nullable="true"
+                comment="mtime of source at convert time — drives idempotent dedupe"/>
+        <column xsi:type="varchar" name="status" length="20" nullable="false" default="ok" comment="ok | failed | skipped"/>
+        <column xsi:type="text" name="error_message" nullable="true" comment="If status=failed"/>
+        <column xsi:type="timestamp" name="optimized_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="When the conversion ran"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="log_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="ETF_PSO_OPT_UNQ_SOURCE_OUTPUT">
+            <column name="source_path"/>
+            <column name="output_path"/>
+        </constraint>
+        <index referenceId="ETF_PSO_OPT_IDX_SOURCE" indexType="btree">
+            <column name="source_path"/>
+        </index>
+        <index referenceId="ETF_PSO_OPT_IDX_STATUS_DATE" indexType="btree">
+            <column name="status"/>
+            <column name="optimized_at"/>
+        </index>
+        <index referenceId="ETF_PSO_OPT_IDX_SAVINGS" indexType="btree">
+            <column name="savings_pct"/>
         </index>
     </table>
 

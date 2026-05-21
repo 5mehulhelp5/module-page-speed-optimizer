@@ -22,7 +22,7 @@ class Mapper
         // Image audits — covered by ETechFlow Image Optimizer (separate module)
         'uses-webp-images'          => 'ETechFlow Image Optimizer: Enable WebP conversion',
         'modern-image-formats'      => 'ETechFlow Image Optimizer: Enable WebP conversion',
-        'uses-optimized-images'     => 'ETechFlow Image Optimizer: Run etechflow:io:optimize for lossless JPEG/PNG compression',
+        'uses-optimized-images'     => 'ETechFlow Image Optimizer: Run etechflow:pso:optimize-images for lossless JPEG/PNG compression',
         'offscreen-images'          => 'ETechFlow Image Optimizer: Enable native lazy-loading',
         'unsized-images'            => 'Magento product images carry width/height by default — check theme overrides',
         'uses-responsive-images'    => 'ETechFlow Image Optimizer v1.4+ — per-attribute image sizing',

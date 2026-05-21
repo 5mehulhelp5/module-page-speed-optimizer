@@ -2,6 +2,42 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
+    <!--
+        Response-output plugins for v2.0 code optimization features.
+        All target Magento\Framework\App\Response\Http::sendResponse → we wire
+        them via beforeSendResponse hooks so the rewritten body / set headers
+        reach the browser. sortOrder matters: minify HTML LAST so the JS/font
+        rewriters can find their target tags in unaltered HTML.
+    -->
+    <type name="Magento\Framework\App\Response\Http">
+        <plugin name="etechflow_pso_js_defer"
+                type="ETechFlow\PageSpeedOptimizer\Plugin\Response\JsDeferPlugin"
+                sortOrder="10"/>
+        <plugin name="etechflow_pso_defer_fonts"
+                type="ETechFlow\PageSpeedOptimizer\Plugin\Response\DeferFontsPlugin"
+                sortOrder="20"/>
+        <plugin name="etechflow_pso_server_push"
+                type="ETechFlow\PageSpeedOptimizer\Plugin\Response\ServerPushPlugin"
+                sortOrder="30"/>
+        <plugin name="etechflow_pso_bfcache"
+                type="ETechFlow\PageSpeedOptimizer\Plugin\Response\BfcachePlugin"
+                sortOrder="40"/>
+        <plugin name="etechflow_pso_html_minify"
+                type="ETechFlow\PageSpeedOptimizer\Plugin\Response\HtmlMinifierPlugin"
+                sortOrder="100"/>
+    </type>
+
+    <!--
+        Lifted from IO: the <picture> block plugin that wraps product images
+        in <picture><source srcset=".webp"><img></picture>.
+    -->
+    <type name="Magento\Catalog\Block\Product\Image">
+        <plugin name="etechflow_pso_picture_block"
+                type="ETechFlow\PageSpeedOptimizer\Plugin\Catalog\Block\PictureBlockPlugin"
+                sortOrder="100"/>
+    </type>
+
+    <!-- CLI command registry -->
     <type name="Magento\Framework\Console\CommandList">
         <arguments>
             <argument name="commands" xsi:type="array">
@@ -11,6 +47,41 @@
                       xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\VerifyCommand</item>
                 <item name="etechflow_pso_history"
                       xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\HistoryCommand</item>
+                <item name="etechflow_pso_optimize_images"
+                      xsi:type="object">ETechFlow\PageSpeedOptimizer\Console\Command\OptimizeImagesCommand</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!--
+        UI Component data source for the Optimization Log admin grid.
+        Same shape as IO had; just renamed namespace.
+    -->
+    <virtualType name="ETechFlowPsoOptimizationLogGridFilterPool"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\FilterPool">
+        <arguments>
+            <argument name="appliers" xsi:type="array">
+                <item name="regular" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\RegularFilter</item>
+                <item name="fulltext" xsi:type="object">Magento\Framework\View\Element\UiComponent\DataProvider\FulltextFilter</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="ETechFlowPsoOptimizationLogGridDataProvider"
+                 type="Magento\Framework\View\Element\UiComponent\DataProvider\DataProvider">
+        <arguments>
+            <argument name="collection"
+                      xsi:type="object" shared="false">ETechFlow\PageSpeedOptimizer\Model\ResourceModel\OptimizationLog\Collection</argument>
+            <argument name="filterPool"
+                      xsi:type="object" shared="false">ETechFlowPsoOptimizationLogGridFilterPool</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="Magento\Framework\View\Element\UiComponent\DataProvider\CollectionFactory">
+        <arguments>
+            <argument name="collections" xsi:type="array">
+                <item name="etechflow_pso_optimization_log_listing_data_source"
+                      xsi:type="string">ETechFlow\PageSpeedOptimizer\Model\ResourceModel\OptimizationLog\Collection</item>
             </argument>
         </arguments>
     </type>

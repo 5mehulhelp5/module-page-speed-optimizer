@@ -4,6 +4,117 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
+## [2.0.0] — 2026-05-21 — Full Amasty PSO Pro feature parity: image opt + code opt
+
+**The flagship release.** v1.x shipped the PSI diagnostic + trend graph. v2.0 absorbs the entire ETechFlow Image Optimizer module + adds the code-optimization features that make this a real Amasty Google PageSpeed Optimizer Pro competitor.
+
+### Why v2.0 (not v1.2)
+
+We added 5 new admin sections, a new database table, a new CLI command, and 6 new response-output plugins. That's not a minor release. v2.0 acknowledges the breaking-architectural change.
+
+### Added — Image Optimization (lifted from IO)
+
+The entire image-optimization subsystem now lives inside PSO:
+
+- **WebP conversion** via `cwebp` / Imagick / GD engine chain. First available wins; graceful fallback on engine failure.
+- **`<picture>` element rendering** with WebP source + JPEG/PNG fallback. Plugin on `Magento\Catalog\Block\Product\Image`.
+- **Native lazy-load** — adds `loading="lazy"` to below-the-fold catalog images.
+- **Admin grid** at *Stores → Settings → Image Optimization Log* — UI Component listing of `etechflow_pso_optimization_log` rows.
+- **Savings summary banner** — 5 metric cards (images optimized, source/WebP totals, MB saved, avg compression %).
+- **Mass actions**: Delete log entries; Restore originals (deletes the .webp file + log row, path-traversal-safe).
+- **Bulk CLI** `bin/magento etechflow:pso:optimize-images --limit=N --dry-run --no-progress` — idempotent mtime dedupe; safe for nightly cron.
+- **DB table** `etechflow_pso_optimization_log` — full audit of every conversion.
+
+ETechFlow_ImageOptimizer module remains available as a lighter "image-only" SKU; PSO Pro v2.0 supersedes it for full-feature stores.
+
+### Added — Code Optimization (NEW, matches Amasty Pro)
+
+Five new response-output plugins on `Magento\Framework\App\Response\Http::sendResponse`:
+
+- **HTML minification** — strips whitespace, comments, line breaks. Skips `<pre>` / `<script>` / `<style>` contents to preserve correctness. Live-test result: 58.6KB → 53.7KB on Magento 2.4.8 stock homepage (~8.5% reduction).
+- **JS defer-to-footer** — adds `defer` attribute to non-inline external scripts. Skips RequireJS bootstrap, async scripts, ES modules. URL-pattern exclusion list (defaults: checkout, cart).
+- **Defer Fonts Loading** — adds `font-display: swap` to all `@font-face` rules + injects a high-cascade override `<style>` block. Per-family exclusion list (excluded fonts get `font-display: block` instead).
+- **Server Push / Preload hints** — sets `Link: rel=preload` response headers for critical assets. Auto-detects WOFF2 fonts in the response body; admin can configure additional URLs.
+- **Back/Forward Cache (bfcache)** compatibility — strips `no-store` from `Cache-Control` on included pages so Chrome/Firefox can serve instant back/forward navigation. Defensive: enforces `no-store` on excluded pages (checkout, cart, customer/account by default).
+
+All five are toggleable independently; all five default to OFF so customers opt-in per feature after testing.
+
+### Improvements over Amasty
+
+- **HeaderHelperTrait** — Laminas Header objects vs string casts (live-test caught this; documented gotcha #5 below).
+- **Defer Fonts** also injects `<link rel=preload>` hints for any `@font-face` it touches — Amasty doesn't do this automatically.
+- **bfcache** explicitly ENFORCES `no-store` on private pages (defensive). Amasty's bfcache module just strips, doesn't enforce.
+- **CLI `etechflow:pso:optimize-images` ships with `--dry-run` flag** — Amasty's bulk CLI doesn't.
+
+### Compatibility claims (matching Amasty Pro)
+
+- ✅ Magento Open Source 2.4.4 – 2.4.8 / Adobe Commerce 2.4.4 – 2.4.8 / PHP 8.1 – 8.4
+- ✅ Hyvä Theme + Hyvä Checkout (no theme-specific code; everything lives in core admin + response plugins)
+- ✅ Mage-OS compatible
+- ✅ Varnish-aware (response plugins skip when Varnish hits)
+- ⚠️ AWS Remote Storage — not yet tested; v2.1
+- ⚠️ Hyvä CSP compliance — manual verification needed; v2.1 will audit
+
+### Live-test gotchas caught + documented
+
+Adding to the running list (now at 6):
+
+1. *(IO v1.2.0)* PHP 8.1+ readonly child-property conflict on `$formKey`
+2. *(IO v1.2.0)* Magento XSD varchar length capped at 1024
+3. *(IO v1.2.0)* InnoDB utf8mb4 composite-index 3072-byte limit
+4. *(PSO v1.1.0)* `Magento\Framework\DataObject::hasData($key = '')` has a $key parameter
+5. **(NEW — PSO v2.0)** **`HttpResponse::getHeader('X')` returns a Laminas Header object, NOT a string.** Casting `(string) $response->getHeader(...)` throws on PHP 8+. Solution: a `HeaderHelperTrait` with a `headerValue()` accessor that calls `->getFieldValue()` on the object. All 5 v2.0 response plugins use it.
+6. **(NEW — PSO v2.0)** **PSR-4 filename↔classname mismatch on a lifted module.** When you `cp` a file and rename it but forget to rename the `class` declaration inside, Magento's autoloader silently tries to load both — resulting in `Cannot redeclare class` fatals. ALWAYS rename the class inside when you rename the file.
+
+### v2.0 deferred to v2.1+
+
+These Amasty Pro features need more time:
+
+- **AVIF format support** (next-gen image, smaller than WebP)
+- **JPEG / PNG / GIF source compression** (currently we only convert, don't compress originals)
+- **Image resize** with 2 algorithms (resize-proportional vs crop) for mobile/tablet variants
+- **4 lazy-load script choices** (jQuery / Native / Vanilla / Lozad) — we ship native only
+- **User-Agent device detection** — different settings per mobile/tablet/desktop
+- **Multi-Process Generation** — parallel image processing
+- **Auto-optimize on upload** — observer on product image save
+- **Smart optimization by viewed pages** (Amasty's newest feature)
+- **CSS minification + merging**
+- **JS bundling + merging**
+- **Minify JS in PHTML files** (non-cacheable page optimization)
+- **Cron Tasks List** admin UI
+- **Sign static files** (browser cache invalidation tokens)
+- **Async order indexing**
+- **CDN URL rewriting** for static assets
+
+Premium tier (v3.0):
+- AJAX Shopping Cart
+- Infinite Scroll for category pages
+- Image optimization by Cron (scheduled, not immediate)
+- JS merging per device
+- Logging for auto-optimization
+
+### Migration
+
+```
+composer update etechflow/module-page-speed-optimizer
+bin/magento setup:upgrade      # creates etechflow_pso_optimization_log table
+bin/magento setup:di:compile
+bin/magento cache:flush
+# Restart php-fpm to clear OPcache (mandatory on prod with opcache.validate_timestamps=0)
+```
+
+After upgrade, every code-optimization toggle defaults to OFF. **Test on staging first** — JS defer in particular can break themes that rely on synchronous script execution.
+
+### Pricing positioning
+
+| Product | Price | What it gets you |
+|---|---|---|
+| **ETechFlow IO** | $0 (free tier — matches Amasty's free) | Basic lazy-load + WebP image optimization only |
+| **ETechFlow PSO Pro** v2.0 | **$179** (vs Amasty Pro $199) | Full image + code optimization + PSI Diagnostic + Trends + bfcache |
+| **ETechFlow PSO Premium** v3.0+ (planned) | **$499** (vs Amasty Premium $599) | All of Pro + AJAX Cart + Infinite Scroll + Cron-scheduled image opt + per-device JS merging |
+
+---
+
 ## [1.1.0] — 2026-05-21 — Score Timeline graph + History CLI
 
 Pure additive release on top of v1.0.0. The diagnostic runs we've been logging into `etechflow_pso_diagnostic_log` now surface as a visual trend graph + a tabular history CLI.

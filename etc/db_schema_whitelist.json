@@ -1,0 +1,29 @@
+{
+    "etechflow_pso_diagnostic_log": {
+        "column": {
+            "log_id": true,
+            "url": true,
+            "strategy": true,
+            "performance_score": true,
+            "lab_fcp_seconds": true,
+            "lab_lcp_seconds": true,
+            "lab_tbt_ms": true,
+            "lab_cls": true,
+            "field_lcp_ms": true,
+            "field_inp_ms": true,
+            "field_cls": true,
+            "field_category": true,
+            "status": true,
+            "error_message": true,
+            "raw_json": true,
+            "run_at": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        },
+        "index": {
+            "ETF_PSO_DIAG_IDX_URL": true,
+            "ETF_PSO_DIAG_IDX_DATE": true
+        }
+    }
+}

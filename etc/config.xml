@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <etechflow_pso>
+            <license>
+                <production_environment>1</production_environment>
+            </license>
+            <general>
+                <enabled>1</enabled>
+            </general>
+            <psi>
+                <default_strategy>mobile</default_strategy>
+                <timeout_seconds>90</timeout_seconds>
+            </psi>
+        </etechflow_pso>
+    </default>
+</config>

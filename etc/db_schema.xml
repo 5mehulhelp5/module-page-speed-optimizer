@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+
+    <!--
+        etechflow_pso_diagnostic_log
+        ─────────────────────────────────────────────────────────────
+        One row per PSI diagnostic run. Lab + CrUX field metrics + raw JSON
+        for future re-parsing as we extract more metrics in v1.1+.
+
+        Constraints applied from lessons learned in IO v1.2.0:
+        - url length 512 (NOT 1024) — InnoDB utf8mb4 index needs ≤ 3072 bytes
+          per key; 512 × 4 = 2048 bytes leaves comfortable headroom
+        - <index> elements DO NOT have `comment` attribute (Magento XSD limit)
+        - Composite indexes avoided when the lead column is long (varchar)
+    -->
+    <table name="etechflow_pso_diagnostic_log" resource="default" engine="innodb"
+           comment="ETechFlow PSO — PSI diagnostic runs (lab + CrUX field metrics)">
+
+        <column xsi:type="int" name="log_id" padding="10" unsigned="true" nullable="false" identity="true"
+                comment="Primary key"/>
+
+        <column xsi:type="varchar" name="url" length="512" nullable="false"
+                comment="The URL that was analysed"/>
+
+        <column xsi:type="varchar" name="strategy" length="16" nullable="false" default="mobile"
+                comment="mobile | desktop"/>
+
+        <column xsi:type="smallint" name="performance_score" padding="6" nullable="true"
+                comment="Lighthouse performance score 0-100 (NULL = run failed)"/>
+
+        <column xsi:type="decimal" name="lab_fcp_seconds" scale="3" precision="6" nullable="true"
+                comment="First Contentful Paint (lab, seconds)"/>
+
+        <column xsi:type="decimal" name="lab_lcp_seconds" scale="3" precision="6" nullable="true"
+                comment="Largest Contentful Paint (lab, seconds)"/>
+
+        <column xsi:type="decimal" name="lab_tbt_ms" scale="0" precision="6" nullable="true"
+                comment="Total Blocking Time (lab, ms) — INP proxy"/>
+
+        <column xsi:type="decimal" name="lab_cls" scale="3" precision="4" nullable="true"
+                comment="Cumulative Layout Shift (lab)"/>
+
+        <column xsi:type="decimal" name="field_lcp_ms" scale="0" precision="6" nullable="true"
+                comment="CrUX real-user LCP (ms; NULL if URL lacks Chrome user traffic)"/>
+
+        <column xsi:type="decimal" name="field_inp_ms" scale="0" precision="6" nullable="true"
+                comment="CrUX real-user INP (ms)"/>
+
+        <column xsi:type="decimal" name="field_cls" scale="3" precision="4" nullable="true"
+                comment="CrUX real-user CLS"/>
+
+        <column xsi:type="varchar" name="field_category" length="16" nullable="true"
+                comment="CrUX overall: FAST | AVERAGE | SLOW"/>
+
+        <column xsi:type="varchar" name="status" length="20" nullable="false" default="ok"
+                comment="ok | failed"/>
+
+        <column xsi:type="text" name="error_message" nullable="true"
+                comment="Surface failure cause when status=failed"/>
+
+        <column xsi:type="mediumtext" name="raw_json" nullable="true"
+                comment="Full PSI JSON response — for re-parsing if v1.1+ extracts more metrics"/>
+
+        <column xsi:type="timestamp" name="run_at" on_update="false" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="When the diagnostic ran"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="log_id"/>
+        </constraint>
+
+        <index referenceId="ETF_PSO_DIAG_IDX_URL" indexType="btree">
+            <column name="url"/>
+        </index>
+
+        <index referenceId="ETF_PSO_DIAG_IDX_DATE" indexType="btree">
+            <column name="run_at"/>
+        </index>
+    </table>
+
+</schema>

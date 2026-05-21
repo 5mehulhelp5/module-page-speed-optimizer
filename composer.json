@@ -1,0 +1,39 @@
+{
+    "name": "etechflow/module-page-speed-optimizer",
+    "description": "Magento 2 Page Speed Optimizer — Google PageSpeed Insights diagnostic from the admin, score + recommendation tracking, ETechFlow-feature mapping. Code optimization (CSS/JS/HTML minification, defer fonts, prioritize resource loading) ships in v1.1+. Standalone or bundled with ETechFlow Image Optimizer for the full performance suite.",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "eTechFlow Pvt. Ltd.",
+            "email": "info@etechflow.com",
+            "homepage": "https://etechflow.com"
+        }
+    ],
+    "support": {
+        "email": "info@etechflow.com",
+        "source": "https://etechflow.com"
+    },
+    "require": {
+        "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0",
+        "magento/framework": "^103.0||^104.0",
+        "magento/module-backend": "^102.0||^103.0",
+        "magento/module-store": "^101.1||^102.0",
+        "magento/module-config": "^101.2||^102.0",
+        "magento/module-ui": "^101.2||^102.0"
+    },
+    "suggest": {
+        "etechflow/module-image-optimizer": "Pair with IO so the PSI Diagnose recommendation mapper can point to specific image-optimization settings (e.g. 'Serve images in next-gen formats → Enable WebP conversion').",
+        "etechflow/module-next-day-eligibility": "Bundle key activates this module too. Existing ETechFlow suite customer? Get this free.",
+        "etechflow/module-back-in-stock-notification": "Bundle key activates this module too."
+    },
+    "autoload": {
+        "psr-4": {
+            "ETechFlow\\PageSpeedOptimizer\\": ""
+        },
+        "files": [
+            "registration.php"
+        ]
+    }
+}

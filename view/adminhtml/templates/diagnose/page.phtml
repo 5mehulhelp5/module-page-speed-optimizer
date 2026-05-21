@@ -1,0 +1,179 @@
+<?php
+/**
+ * @var \ETechFlow\PageSpeedOptimizer\Block\Adminhtml\Diagnose\Page $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$defaultUrl = $block->getDefaultUrl();
+$defaultStrategy = $block->getDefaultStrategy();
+$runActionUrl = $block->getRunActionUrl();
+$formKey = $block->getFormKey();
+$hasApiKey = $block->hasApiKey();
+?>
+<div style="max-width:1100px;">
+
+    <?php if (!$hasApiKey): ?>
+        <div style="padding:14px 18px; border:1px solid #f0a000; border-radius:4px; background:#fff7e0; margin-bottom:18px;">
+            <strong><?= $escaper->escapeHtml(__('No Google API key set')); ?></strong> —
+            <?= $escaper->escapeHtml(__('You can still run a diagnostic, but Google will rate-limit you (~1 request/second per IP). Set one in')); ?>
+            <a href="<?= $escaper->escapeUrl($block->getConfigUrl()); ?>"><?= $escaper->escapeHtml(__('Configuration → Page Speed Optimizer → Google PageSpeed Insights')); ?></a>.
+        </div>
+    <?php endif; ?>
+
+    <div style="background:#fff; border:1px solid #d6d6d6; border-radius:4px; padding:22px;">
+        <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
+            <div style="flex: 1 1 360px;">
+                <label for="etf-pso-diag-url" style="display:block; font-size:12px; color:#777; margin-bottom:4px;">
+                    <?= $escaper->escapeHtml(__('URL to analyse')); ?>
+                </label>
+                <input type="url" id="etf-pso-diag-url"
+                       value="<?= $escaper->escapeHtmlAttr($defaultUrl); ?>"
+                       style="width:100%; padding:8px; font-size:14px;"
+                       placeholder="https://your-store.com/">
+            </div>
+            <div>
+                <label for="etf-pso-diag-strategy" style="display:block; font-size:12px; color:#777; margin-bottom:4px;">
+                    <?= $escaper->escapeHtml(__('Strategy')); ?>
+                </label>
+                <select id="etf-pso-diag-strategy" style="padding:8px; font-size:14px;">
+                    <option value="mobile" <?= $defaultStrategy === 'mobile' ? 'selected' : ''; ?>><?= $escaper->escapeHtml(__('Mobile')); ?></option>
+                    <option value="desktop" <?= $defaultStrategy === 'desktop' ? 'selected' : ''; ?>><?= $escaper->escapeHtml(__('Desktop')); ?></option>
+                </select>
+            </div>
+            <div>
+                <button id="etf-pso-diag-run" class="action-default scalable" style="padding:8px 22px; font-size:14px; font-weight:600;">
+                    <?= $escaper->escapeHtml(__('Run diagnostic')); ?>
+                </button>
+            </div>
+        </div>
+        <p style="margin-top:14px; color:#777; font-size:0.9em;">
+            <?= $escaper->escapeHtml(__('Hits Google PageSpeed Insights API. Typically takes 15-45 seconds per run. The URL must be publicly reachable from Google\'s servers — localhost / .test domains will fail.')); ?>
+        </p>
+    </div>
+
+    <div id="etf-pso-diag-result" style="margin-top:22px;"></div>
+</div>
+
+<script>
+(function () {
+    var runBtn = document.getElementById('etf-pso-diag-run');
+    var urlInput = document.getElementById('etf-pso-diag-url');
+    var stratSel = document.getElementById('etf-pso-diag-strategy');
+    var resultBox = document.getElementById('etf-pso-diag-result');
+    if (!runBtn || !urlInput || !stratSel || !resultBox) return;
+
+    function badgeBucket(b) {
+        if (b === 'high')   return 'background:#fdecea; color:#a02818;';
+        if (b === 'medium') return 'background:#fff7e0; color:#a06800;';
+        return 'background:#eef4ff; color:#1f4fa0;';
+    }
+    function scoreColor(c) {
+        if (c === 'good')              return '#1f7a1f';
+        if (c === 'needs-improvement') return '#a06800';
+        if (c === 'poor')              return '#a02818';
+        return '#777';
+    }
+    function escHtml(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+    function fmtSeconds(s) { return s == null ? '—' : (s.toFixed(2) + 's'); }
+    function fmtMs(m)      { return m == null ? '—' : (Math.round(m) + ' ms'); }
+    function fmtCls(c)     { return c == null ? '—' : c.toFixed(3); }
+
+    runBtn.addEventListener('click', function () {
+        var url = urlInput.value.trim();
+        var strategy = stratSel.value;
+        if (!url) { resultBox.innerHTML = '<div style="color:#a02818;">Please enter a URL.</div>'; return; }
+        runBtn.disabled = true;
+        var originalLabel = runBtn.textContent;
+        runBtn.textContent = 'Running… (15-45s)';
+        resultBox.innerHTML = '<div style="padding:18px; text-align:center; color:#777;">Calling Google PageSpeed Insights API…</div>';
+
+        var fd = new FormData();
+        fd.append('form_key', '<?= $escaper->escapeJs($formKey); ?>');
+        fd.append('url', url);
+        fd.append('strategy', strategy);
+
+        fetch('<?= $escaper->escapeJs($runActionUrl); ?>', {
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+        })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (resp) {
+            runBtn.disabled = false;
+            runBtn.textContent = originalLabel;
+            if (!resp.ok || !resp.data || !resp.data.ok) {
+                var err = (resp.data && resp.data.error) || 'Unknown error';
+                resultBox.innerHTML = '<div style="padding:14px 18px; border:1px solid #c00; background:#fdecea; color:#a02818; border-radius:4px;">' + escHtml(err) + '</div>';
+                return;
+            }
+            renderResult(resp.data);
+        })
+        .catch(function (err) {
+            runBtn.disabled = false;
+            runBtn.textContent = originalLabel;
+            resultBox.innerHTML = '<div style="padding:14px 18px; border:1px solid #c00; background:#fdecea; color:#a02818; border-radius:4px;">Network error: ' + escHtml(err.message) + '</div>';
+        });
+    });
+
+    function renderResult(d) {
+        var color = scoreColor(d.scoreCategory);
+        var html = '';
+        html += '<div style="background:#fff; border:1px solid #d6d6d6; border-radius:4px; padding:24px; margin-bottom:18px; display:flex; gap:32px; flex-wrap:wrap; align-items:center;">';
+        html +=   '<div style="text-align:center;">';
+        html +=     '<div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">Performance score</div>';
+        html +=     '<div style="font-size:64px; font-weight:600; color:' + color + '; line-height:1;">' + escHtml(d.score) + '</div>';
+        html +=     '<div style="font-size:12px; color:#888; margin-top:4px;">' + escHtml(d.strategy) + '</div>';
+        html +=   '</div>';
+
+        html +=   '<div style="display:grid; grid-template-columns:repeat(4, auto); gap:18px 28px;">';
+        html +=     metricCard('FCP (lab)', fmtSeconds(d.lab.fcp_s));
+        html +=     metricCard('LCP (lab)', fmtSeconds(d.lab.lcp_s));
+        html +=     metricCard('TBT (lab)', fmtMs(d.lab.tbt_ms));
+        html +=     metricCard('CLS (lab)', fmtCls(d.lab.cls));
+        if (d.field) {
+            html +=   metricCard('LCP (real users)', fmtMs(d.field.lcp_ms), '#1f4fa0');
+            html +=   metricCard('INP (real users)', fmtMs(d.field.inp_ms), '#1f4fa0');
+            html +=   metricCard('CLS (real users)', fmtCls(d.field.cls), '#1f4fa0');
+            html +=   metricCard('Overall', d.field.category || '—', '#1f4fa0');
+        }
+        html +=   '</div>';
+        html += '</div>';
+
+        if (!d.recommendations.length) {
+            html += '<div style="padding:14px 18px; border:1px solid #1f7a1f; background:#e8f5e8; color:#1f7a1f; border-radius:4px;">No actionable recommendations from Google — your store is performing well!</div>';
+        } else {
+            html += '<div style="background:#fff; border:1px solid #d6d6d6; border-radius:4px; padding:0; overflow:hidden;">';
+            html +=   '<div style="padding:14px 18px; background:#f5f5f5; border-bottom:1px solid #d6d6d6; font-weight:600;">Recommendations (' + d.recommendations.length + ')</div>';
+            d.recommendations.forEach(function (rec) {
+                var b = badgeBucket(rec.impactBucket);
+                html += '<div style="padding:14px 18px; border-bottom:1px solid #eee;">';
+                html +=   '<div style="display:flex; gap:14px; align-items:flex-start;">';
+                html +=     '<div style="padding:3px 9px; border-radius:3px; font-size:11px; font-weight:600; text-transform:uppercase; ' + b + '">' + escHtml(rec.impactBucket) + '</div>';
+                html +=     '<div style="flex:1;">';
+                html +=       '<div style="font-weight:600; margin-bottom:4px;">' + escHtml(rec.title) + '</div>';
+                if (rec.impactSeconds > 0) {
+                    html +=     '<div style="font-size:0.85em; color:#777;">Estimated savings: ' + rec.impactSeconds.toFixed(2) + 's</div>';
+                }
+                if (rec.etechflowFix) {
+                    html +=     '<div style="margin-top:6px; padding:6px 10px; background:#e8f5e8; color:#1f7a1f; border-left:3px solid #1f7a1f; font-size:0.9em;">';
+                    html +=       '<strong>ETechFlow fix:</strong> ' + escHtml(rec.etechflowFix);
+                    html +=     '</div>';
+                }
+                html +=     '</div>';
+                html +=   '</div>';
+                html += '</div>';
+            });
+            html += '</div>';
+        }
+
+        resultBox.innerHTML = html;
+    }
+
+    function metricCard(label, value, color) {
+        return '<div>'
+             + '<div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">' + escHtml(label) + '</div>'
+             + '<div style="font-size:20px; font-weight:600; color:' + (color || '#222') + ';">' + escHtml(value) + '</div>'
+             + '</div>';
+    }
+})();
+</script>

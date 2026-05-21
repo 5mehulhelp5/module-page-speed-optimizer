@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="ETechFlow_PageSpeedOptimizer::diagnose"
+             title="Page Speed Diagnose"
+             module="ETechFlow_PageSpeedOptimizer"
+             sortOrder="50"
+             parent="Magento_Backend::system_other_settings"
+             action="etechflow_pso/diagnose/index"
+             resource="ETechFlow_PageSpeedOptimizer::diagnose"/>
+    </menu>
+</config>

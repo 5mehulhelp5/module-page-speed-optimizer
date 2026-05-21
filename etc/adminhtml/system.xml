@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="etechflow" translate="label" sortOrder="200">
+            <label>eTechFlow</label>
+        </tab>
+
+        <section id="etechflow_pso" translate="label" sortOrder="65" showInDefault="1" showInWebsite="1" showInStore="1">
+            <class>separator-top</class>
+            <label>Page Speed Optimizer</label>
+            <tab>etechflow</tab>
+            <resource>ETechFlow_PageSpeedOptimizer::config</resource>
+
+            <group id="license" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>License</label>
+                <field id="license_key" translate="label comment" sortOrder="10" type="obscure"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>License Key</label>
+                    <comment><![CDATA[Per-module key issued by eTechFlow for this host. Leave blank if using a Bundle License Key.]]></comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="bundle_license_key" translate="label comment" sortOrder="20" type="obscure"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Bundle License Key</label>
+                    <comment><![CDATA[Shared key activating every ETechFlow module on this host.]]></comment>
+                    <config_path>etechflow_bundle/license/license_key</config_path>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="production_environment" translate="label comment" sortOrder="30" type="select"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Production Environment</label>
+                    <comment><![CDATA[Set to No on staging/dev to bypass licensing. Most dev hostnames auto-detect.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
+            <group id="general" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+                <field id="enabled" translate="label comment" sortOrder="10" type="select"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Module Enabled</label>
+                    <comment><![CDATA[Turn the whole module on/off without uninstalling.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+
+            <group id="psi" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Google PageSpeed Insights</label>
+                <comment><![CDATA[Connects to Google's PageSpeed Insights API so you can run real-world diagnostic scans from the admin (Stores → Settings → Page Speed Diagnose).
+                <br><br>
+                <strong>One-time setup (~3 min)</strong>:
+                <ol>
+                  <li>Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">console.cloud.google.com/apis/credentials</a></li>
+                  <li>Click "Create Credentials → API Key" (free)</li>
+                  <li>Enable "PageSpeed Insights API" on the project (free, 25,000 requests/day)</li>
+                  <li>Paste the key below.</li>
+                </ol>]]></comment>
+                <field id="api_key" translate="label comment" sortOrder="10" type="obscure"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>PageSpeed Insights API Key</label>
+                    <comment><![CDATA[Free Google Cloud API key. Without it, diagnostic still works but you'll hit Google's per-IP rate limit (~1 request/second). Strongly recommended.]]></comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="default_strategy" translate="label comment" sortOrder="20" type="select"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Default Strategy</label>
+                    <comment><![CDATA[Which PageSpeed score to fetch by default. Mobile is what Google ranks against (mobile-first indexing); desktop is informational.]]></comment>
+                    <source_model>ETechFlow\PageSpeedOptimizer\Model\Source\PsiStrategy</source_model>
+                </field>
+                <field id="timeout_seconds" translate="label comment" sortOrder="30" type="text"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>API Timeout (seconds)</label>
+                    <comment><![CDATA[PageSpeed Insights typically takes 15-45s per page. Default 90s gives generous headroom.]]></comment>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                </field>
+            </group>
+
+            <group id="code_optimization" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Code Optimization (v1.1+ — coming soon)</label>
+                <comment><![CDATA[These features are in development for v1.1: HTML / CSS / JavaScript minification, Defer Fonts Loading, Prioritize Resource Loading, Critical CSS extraction, Performance Budgets, Hyvä Mode. v1.0 ships the PSI Diagnose tool only.]]></comment>
+            </group>
+        </section>
+    </system>
+</config>

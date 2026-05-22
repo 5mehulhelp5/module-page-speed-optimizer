@@ -4,6 +4,27 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
+## [2.3.1] — 2026-05-22 — Move admin menu under eTechFlow top-level sidebar
+
+### Changed
+
+- **PSO admin pages relocated to a dedicated "eTechFlow" sidebar entry.** Previously the 4 PSO pages (Diagnose, Trends, Image Optimization Log, Cron Tasks) were direct children of `System → Other Settings`. Now they share a single `Page Speed Optimizer` column inside a new top-level `eTechFlow` sidebar entry (clusters with other paid-extension vendors above Magento's Stores). Each entry's title was trimmed to remove the redundant "Page Speed" prefix (now just "Diagnose", "Trends", etc., since the column header already says "Page Speed Optimizer").
+- Each eTechFlow module declares the same `eTechFlow::root` + `eTechFlow::settings` + `eTechFlow::configuration` entries — Magento merges by id, so installing N modules still produces exactly one `eTechFlow` sidebar group.
+
+### Migration
+
+```
+composer update etechflow/module-page-speed-optimizer
+bin/magento setup:upgrade
+bin/magento setup:di:compile
+bin/magento setup:static-content:deploy -f
+bin/magento cache:flush
+```
+
+Admin URL routes unchanged (`etechflow_pso/diagnose/index`, `etechflow_pso/trends/index`, `etechflow_pso/optimizationlog/index`, `etechflow_pso/crontasks/index` all still work). No schema or behaviour changes — pure menu-layout adjustment.
+
+---
+
 ## [2.3.0] — 2026-05-21 — Smart optimization by viewed pages — 14/14 Amasty Pro features matched ✅
 
 **This release closes the LAST Amasty Pro feature gap.** PSO Pro at $179 now matches Amasty Pro at $199 on **every single advertised Pro-tier feature**.

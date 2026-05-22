@@ -2,32 +2,69 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
     <menu>
-        <add id="ETechFlow_PageSpeedOptimizer::diagnose"
-             title="Page Speed Diagnose"
+        <!-- Shared eTechFlow top-level — declared identically by every
+             eTechFlow module so Magento merges to one sidebar entry.
+             See reference_etechflow_menu_convention. -->
+        <add id="eTechFlow::root"
+             title="eTechFlow"
              module="ETechFlow_PageSpeedOptimizer"
-             sortOrder="50"
-             parent="Magento_Backend::system_other_settings"
+             sortOrder="68"
+             resource="Magento_Backend::admin"/>
+
+        <add id="eTechFlow::settings"
+             title="Settings"
+             module="ETechFlow_PageSpeedOptimizer"
+             sortOrder="500"
+             parent="eTechFlow::root"
+             resource="Magento_Backend::admin"/>
+
+        <add id="eTechFlow::configuration"
+             title="Configuration"
+             module="ETechFlow_PageSpeedOptimizer"
+             sortOrder="10"
+             parent="eTechFlow::settings"
+             action="adminhtml/system_config/edit/section/etechflow_pso"
+             resource="Magento_Config::config"/>
+
+        <!-- Page Speed Optimizer column. Previously all 4 entries were
+             parented directly under Magento_Backend::system_other_settings;
+             now they share a single PSO column header. -->
+        <add id="ETechFlow_PageSpeedOptimizer::management"
+             title="Page Speed Optimizer"
+             module="ETechFlow_PageSpeedOptimizer"
+             sortOrder="70"
+             parent="eTechFlow::root"
+             resource="ETechFlow_PageSpeedOptimizer::diagnose"/>
+
+        <add id="ETechFlow_PageSpeedOptimizer::diagnose"
+             title="Diagnose"
+             module="ETechFlow_PageSpeedOptimizer"
+             sortOrder="10"
+             parent="ETechFlow_PageSpeedOptimizer::management"
              action="etechflow_pso/diagnose/index"
              resource="ETechFlow_PageSpeedOptimizer::diagnose"/>
+
         <add id="ETechFlow_PageSpeedOptimizer::trends"
-             title="Page Speed Trends"
+             title="Trends"
              module="ETechFlow_PageSpeedOptimizer"
-             sortOrder="51"
-             parent="Magento_Backend::system_other_settings"
+             sortOrder="20"
+             parent="ETechFlow_PageSpeedOptimizer::management"
              action="etechflow_pso/trends/index"
              resource="ETechFlow_PageSpeedOptimizer::trends"/>
+
         <add id="ETechFlow_PageSpeedOptimizer::optimizationlog"
              title="Image Optimization Log"
              module="ETechFlow_PageSpeedOptimizer"
-             sortOrder="52"
-             parent="Magento_Backend::system_other_settings"
+             sortOrder="30"
+             parent="ETechFlow_PageSpeedOptimizer::management"
              action="etechflow_pso/optimizationlog/index"
              resource="ETechFlow_PageSpeedOptimizer::optimizationlog"/>
+
         <add id="ETechFlow_PageSpeedOptimizer::crontasks"
-             title="Cron Tasks List"
+             title="Cron Tasks"
              module="ETechFlow_PageSpeedOptimizer"
-             sortOrder="53"
-             parent="Magento_Backend::system_other_settings"
+             sortOrder="40"
+             parent="ETechFlow_PageSpeedOptimizer::management"
              action="etechflow_pso/crontasks/index"
              resource="ETechFlow_PageSpeedOptimizer::crontasks"/>
     </menu>

@@ -4,24 +4,45 @@ All notable changes to this module. Adheres to [Semantic Versioning](https://sem
 
 ---
 
-## [2.3.1] — 2026-05-22 — Move admin menu under eTechFlow top-level sidebar
+## [2.3.1] — 2026-05-30 — First Packagist release: menu reorganisation + always-a-patch discipline
+
+First tagged release on Packagist. Prior versions existed in the internal
+working repo only.
 
 ### Changed
 
-- **PSO admin pages relocated to a dedicated "eTechFlow" sidebar entry.** Previously the 4 PSO pages (Diagnose, Trends, Image Optimization Log, Cron Tasks) were direct children of `System → Other Settings`. Now they share a single `Page Speed Optimizer` column inside a new top-level `eTechFlow` sidebar entry (clusters with other paid-extension vendors above Magento's Stores). Each entry's title was trimmed to remove the redundant "Page Speed" prefix (now just "Diagnose", "Trends", etc., since the column header already says "Page Speed Optimizer").
-- Each eTechFlow module declares the same `eTechFlow::root` + `eTechFlow::settings` + `eTechFlow::configuration` entries — Magento merges by id, so installing N modules still produces exactly one `eTechFlow` sidebar group.
+- **Admin menu reorganised** under the shared eTechFlow top-level sidebar
+  group, matching the convention adopted across all ETechFlow modules
+  (Amasty-style consolidated menu). Previously a standalone top-level
+  entry; now nested under eTechFlow → Page Speed Optimizer for visual
+  consistency when multiple ETechFlow modules are installed.
+
+### Added
+
+- **`Setup/Patch/Data/V231ReleaseMarker.php`** — no-op release marker
+  patch. Establishes the always-a-patch discipline previously adopted in
+  NDE v1.7.1, BED v1.2.2, and ISP v2.0.0. Every release ships at least
+  one patch so `setup:upgrade` always has something to register in
+  `patch_list` — surfacing FS / permissions / DI errors during the patch
+  phase (which retries cleanly) instead of at the end of the upgrade
+  (which doesn't). v2.3.1 is the first tagged release, hence the marker.
 
 ### Migration
 
-```
-composer update etechflow/module-page-speed-optimizer
+```bash
+composer require etechflow/module-page-speed-optimizer:^2.3.1
 bin/magento setup:upgrade
 bin/magento setup:di:compile
-bin/magento setup:static-content:deploy -f
 bin/magento cache:flush
 ```
 
-Admin URL routes unchanged (`etechflow_pso/diagnose/index`, `etechflow_pso/trends/index`, `etechflow_pso/optimizationlog/index`, `etechflow_pso/crontasks/index` all still work). No schema or behaviour changes — pure menu-layout adjustment.
+Pre-flight check after upgrade:
+```sql
+SELECT module, schema_version, data_version FROM setup_module
+WHERE module='ETechFlow_PageSpeedOptimizer';
+```
+Both columns should read `2.3.1`. If `data_version` is stale, re-run
+`setup:upgrade` — do NOT flush cache yet.
 
 ---
 

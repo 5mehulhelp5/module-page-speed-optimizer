@@ -33,11 +33,6 @@
                     <config_path>etechflow_bundle/license/license_key</config_path>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                 </field>
-                <field id="production_environment" translate="label comment" sortOrder="30" type="select" showInDefault="1" showInWebsite="1" showInStore="1">
-                    <label>Production Environment</label>
-                    <comment><![CDATA[Set to No on staging/dev to bypass licensing.]]></comment>
-                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                </field>
             </group>
 
             <group id="payment" translate="label" sortOrder="6" showInDefault="1" showInWebsite="0" showInStore="0">

@@ -4,6 +4,7 @@
     <update handle="styles"/>
     <body>
         <referenceContainer name="content">
+            <block class="Magento\Backend\Block\Template" name="etechflow_pso_update_notice" template="ETechFlow_PageSpeedOptimizer::update-notice.phtml" before="-" cacheable="false"/>
             <block class="ETechFlow\PageSpeedOptimizer\Block\Adminhtml\Diagnose\Page"
                    name="etechflow.pso.diagnose.page"
                    template="ETechFlow_PageSpeedOptimizer::diagnose/page.phtml"
